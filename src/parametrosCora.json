@@ -1,0 +1,58 @@
+{
+  "id": "inv_GBbAMXrpS90u5cbMB2Kig8w",
+  "status": "LATE",
+  "created_at": "2025-03-29T18:21:53Z",
+  "total_amount": 9990,
+  "total_paid": 0,
+  "occurrence_date": null,
+  "code": null,
+  "customer": {
+    "name": "Adriana Arrais De Souza Silva",
+    "email": "adrianapietra45@gmail.com",
+    "telephone": null,
+    "document": {
+      "identity": "33707301893",
+      "type": "CPF"
+    },
+    "address": null,
+    "code": null
+  },
+  "services": [
+    {
+      "name": "Graduação Em Teologia Parcela 6/20",
+      "description": "Fase I do curso Bacharel em Teologia com Duração de 18 Meses",
+      "amount": 9990,
+      "unit": "AMOUNT",
+      "quantity": null,
+      "total_amount": null,
+      "code": null
+    }
+  ],
+  "payment_terms": {
+    "due_date": "2025-09-10",
+    "fine": {
+      "date": "2025-09-11",
+      "amount": 200,
+      "rate": null
+    },
+    "interest": {
+      "rate": 1
+    },
+    "discount": {
+      "fixed": 2990
+    }
+  },
+  "payment_options": {
+    "bank_slip": {
+      "barcode": "40399120000000099900000015297290012750157601",
+      "digitable": "40390000071529729001527501576014912000000009990",
+      "our_number": "52972900127501576",
+      "registered": true,
+      "url": "https://storage.googleapis.com/download/storage/v1/b/cora_production_exporter_bankslip_storage/o/boleto-qrcode-75f2b2b0-3cfc-4634-b036-4ff0f1811e81.pdf?generation=1743272524075966&alt=media"
+    }
+  },
+  "payments": [],
+  "pix": {
+    "emv": "00020101021226810014br.gov.bcb.pix2559qrcode.cora.com.br/v1/cobv/1816c0317ae94bebb971b301d8a8a0f35204000053039865802BR5919CLUBE DE PREGADORES6009SAO PAULO62070503***6304BECF"
+  }
+}

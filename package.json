@@ -1,4 +1,12 @@
 {
+  "name": "app-consulta-boleto-cora",
+  "version": "1.0.0",
+  "description": "API para consulta de boletos Cora",
+  "main": "src/servidor.js",
+  "scripts": {
+    "start": "node src/servidor.js",
+    "dev": "nodemon src/servidor.js"
+  },
   "dependencies": {
     "axios": "^1.12.2",
     "cors": "^2.8.5",
