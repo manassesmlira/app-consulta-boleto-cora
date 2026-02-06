@@ -11,14 +11,14 @@ const PORTA = process.env.PORT;
 
 // Configuração do CORS
 const corsOptions = {
-    origin: process.env.FRONTEND_URL, 
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: false, 
-    optionsSuccessStatus: 204, 
+  origin: process.env.FRONTEND_URL,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: false,
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.options('*', cors(corsOptions));
 
 app.get('/', (req, res) => {
     res.status(200).json({ mensagem: 'API de Boletos está funcionando!' });
