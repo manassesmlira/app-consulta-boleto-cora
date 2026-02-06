@@ -21,7 +21,7 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 app.get('/', (req, res) => {
-    res.status(200).json({ mensagem: 'API de Boletos está funcionando!' });
+  res.status(200).json({ mensagem: 'API OK', build: 'GET-CPF-ATIVO' });
 });
 
 app.use('/api/boletos', rotasBoletos);
