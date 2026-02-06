@@ -37,8 +37,10 @@ app.use((err, req, res, next) => {
 });
 
 // Inicia o servidor
-app.listen(PORTA, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORTA}`);
-    console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`CORS permitido para: ${process.env.FRONTEND_URL || 'qualquer origem (CORS desabilitado ou não configurado)'}`);
+app.listen(PORTA, "0.0.0.0", () => {
+  console.log(`🚀 Servidor rodando na porta ${PORTA}`);
+  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`CORS permitido para: ${process.env.FRONTEND_URL || 'qualquer origem (CORS desabilitado ou não configurado)'}`);
 });
+
+
