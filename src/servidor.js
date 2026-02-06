@@ -13,7 +13,7 @@ const PORTA = process.env.PORT;
 const corsOptions = {
     origin: process.env.FRONTEND_URL, 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true, 
+    credentials: false, 
     optionsSuccessStatus: 204, 
 };
 
@@ -25,10 +25,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/boletos', rotasBoletos);
-
-app.get("/health", (req, res) => {
-  res.status(200).send("ok");
-});
 
 app.use((req, res, next) => {
     console.warn(`⚠️ Rota não encontrada: ${req.method} ${req.originalUrl}`);
