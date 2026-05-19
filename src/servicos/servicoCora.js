@@ -17,7 +17,8 @@ class CoraService {
     // Lê diretamente do .env
     this.apiBaseUrl = process.env.CORA_API_BASE_URL;
     this.clientId = process.env.CORA_CLIENT_ID;
-    this.privateKeyPassphrase = process.env.CORA_PRIVATE_KEY_PASSPHRASE;
+    const raw = process.env.CORA_PRIVATE_KEY_PASSPHRASE;
+    this.privateKeyPassphrase = (raw && raw !== 'NONE' && raw.trim() !== '') ? raw : undefined;
     this.certEnvVar = process.env.CORACERT;
     this.keyEnvVar = process.env.CORAKEY;
     this.certFolderPath = process.env.CORA_CERT_FOLDER_PATH; // ex: C:/node/...
