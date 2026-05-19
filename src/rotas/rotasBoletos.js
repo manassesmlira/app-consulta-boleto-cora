@@ -12,4 +12,6 @@ router.get("/:cpf", (req, res) => {
 });
 router.post('/consultar-boletos', controladorBoletos.consultarBoletos);
 
-module.exports = router;
+
+module.exports = router; 
+

@@ -10,3 +10,6 @@ coverage
 *.log
 *.env
 front-end.html
+documentacao
+.vercel
+.env*.local

@@ -1,0 +1,4 @@
+comando para iniciar o servidor, estando na pasta principal do projeto rode:
+node src/servidor.js
+
+
