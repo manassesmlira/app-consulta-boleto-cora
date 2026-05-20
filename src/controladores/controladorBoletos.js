@@ -27,7 +27,13 @@ const consultarBoletos = async (req, res) => {
         // 4. Verifica se nenhum boleto foi encontrado
         if (boletosAtrasados.length === 0 && !proximoBoletoAVencer) {
             console.log(`📄 Nenhum boleto ativo encontrado para o CPF: ${cpfLimpo}`);
-            return res.status(404).json({ erro: 'Nenhum boleto ativo encontrado para o CPF fornecido.' });
+            
+            const mensagemHtml = `Até esse momento, nenhum boleto associado a esse CPF.<br><br>Se você é novo aluno, é possível que seus boletos ainda não tenham chegado no sistema. Entre em contato com a secretaria da escola clicando aqui: <a href="https://wa.me/5511982223315?text=Olá,%20sou%20novo%20aluno%20e%20não%20encontrei%20meus%20boletos." target="_blank" style="font-weight: bold; text-decoration: underline;">11 98222-3315</a>`;
+            
+            return res.status(200).json({ 
+                mensagem: mensagemHtml,
+                boletos: []
+            });
         }
 
         // 5. Prepara a lista de boletos para a resposta, aplicando os status desejados
