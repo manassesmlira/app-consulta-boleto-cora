@@ -159,6 +159,7 @@ class CoraService {
     });
 
     try {
+    
       const response = await axios.post(tokenUrl, requestBody, {
         httpsAgent,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }

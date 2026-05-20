@@ -13,3 +13,5 @@ front-end.html
 documentacao
 .vercel
 .env*.local
+cert_key_cora_production_*/
+*.zip
