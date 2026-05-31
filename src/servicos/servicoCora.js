@@ -533,7 +533,55 @@ async consultarBoletosPorCpf(cpf) {
     throw error;
   }
 }
+async gerarPixMatricula({ nome, cpf, email, whatsapp, plano, nomePlano, valorMatricula }) {
+  const { v4: uuidv4 } = require('uuid');
 
+  const httpsAgent = await this.createHttpsAgent();
+  const token = await this.getAccessToken();
+
+  const hoje = new Date();
+  hoje.setDate(hoje.getDate() + 2);
+  const dueDate = hoje.toISOString().split('T')[0];
+
+  const payload = {
+    code: `matricula_${plano}_${Date.now()}`,
+    customer: {
+      name: nome,
+      email: email,
+      document: {
+        identity: cpf,
+        type: 'CPF'
+      }
+    },
+    services: [
+      {
+        name: nomePlano,
+        description: `Matrícula - ${nomePlano}`,
+        amount: valorMatricula
+      }
+    ],
+    payment_terms: {
+      due_date: dueDate
+    },
+    payment_forms: ['PIX']
+  };
+
+  const response = await axios.post(
+    `${this.apiBaseUrl.replace(/\/$/, '')}/v2/invoices/`,
+    payload,
+    {
+      httpsAgent,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Idempotency-Key': uuidv4()
+      }
+    }
+  );
+
+  return response.data;
+}
 }
 
 module.exports = new CoraService();

@@ -5,13 +5,29 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const cors = require('cors');
 const rotasBoletos = require('./rotas/rotasBoletos');
+const rotasMatricula = require('./rotas/rotasMatricula');
 
 const app = express();
 const PORTA = process.env.PORT;
 
+app.use(express.json());
+
 // Configuração do CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_CHECKOUT_URL
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origem não permitida pelo CORS: ' + origin));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: false,
   optionsSuccessStatus: 204,
@@ -24,6 +40,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/boletos', rotasBoletos);
+app.use('/api/matricula', rotasMatricula);
 
 app.use((req, res, next) => {
     console.warn(`⚠️ Rota não encontrada: ${req.method} ${req.originalUrl}`);
