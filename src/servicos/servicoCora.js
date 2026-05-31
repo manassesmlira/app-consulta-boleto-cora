@@ -534,7 +534,7 @@ async consultarBoletosPorCpf(cpf) {
   }
 }
 async gerarPixMatricula({ nome, cpf, email, whatsapp, plano, nomePlano, valorMatricula }) {
-  const { v4: uuidv4 } = require('uuid');
+  const { randomUUID } = require('crypto');
 
   const httpsAgent = await this.createHttpsAgent();
   const token = await this.getAccessToken();
@@ -575,7 +575,7 @@ async gerarPixMatricula({ nome, cpf, email, whatsapp, plano, nomePlano, valorMat
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'Idempotency-Key': uuidv4()
+        'Idempotency-Key': randomUUID()
       }
     }
   );
