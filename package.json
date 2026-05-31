@@ -8,10 +8,12 @@
     "dev": "nodemon src/servidor.js"
   },
   "dependencies": {
+    "@notionhq/client": "^5.22.0",
     "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "resend": "^6.12.4"
   }
 }

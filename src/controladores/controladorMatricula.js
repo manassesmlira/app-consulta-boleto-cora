@@ -1,5 +1,8 @@
 const servicoCora = require('../servicos/servicoCora');
 const validadorCpf = require('../utilitarios/validadorCpf');
+// Importações dos novos serviços
+const servicoNotion = require('../servicos/servicoNotion');
+const servicoEmail = require('../servicos/servicoEmail');
 
 const gerarPixMatricula = async (req, res) => {
   const { nome, cpf, email, whatsapp, plano } = req.body;
@@ -44,6 +47,7 @@ const gerarPixMatricula = async (req, res) => {
   }
 
   try {
+    // 1. Gera o Pix na Cora
     const cobranca = await servicoCora.gerarPixMatricula({
       nome,
       cpf: cpfLimpo,
@@ -54,6 +58,35 @@ const gerarPixMatricula = async (req, res) => {
       valorMatricula
     });
 
+    // Prepara os dados para salvar no Notion e enviar por e-mail
+    const dadosMatricula = {
+      nome,
+      cpf: cpfLimpo,
+      email,
+      whatsapp,
+      plano,
+      valor: valorMatricula, 
+      id: cobranca.id,
+      status: cobranca.status || 'OPEN'
+    };
+
+    // 2. Salva no Notion de forma isolada
+    try {
+      await servicoNotion.salvarMatriculaNoNotion(dadosMatricula);
+      console.log(`✅ Matrícula de ${nome} salva no Notion com sucesso.`);
+    } catch (erroNotion) {
+      console.error('⚠️ Falha ao salvar no Notion, mas o Pix seguirá normalmente:', erroNotion.message);
+    }
+
+    // 3. Envia o E-mail de forma isolada
+    try {
+      await servicoEmail.enviarNotificacaoMatricula(dadosMatricula);
+      console.log(`✅ E-mail de notificação enviado para a secretaria (${nome}).`);
+    } catch (erroEmail) {
+      console.error('⚠️ Falha ao enviar e-mail, mas o Pix seguirá normalmente:', erroEmail.message);
+    }
+
+    // 4. Retorna os dados para o Front-end (Executa independente das falhas acima)
     return res.status(200).json({
       sucesso: true,
       id: cobranca.id,
@@ -61,8 +94,8 @@ const gerarPixMatricula = async (req, res) => {
       plano,
       nome_plano: nomePlano,
       valor: cobranca.total_amount,
-      qr_code_url: cobranca.payment_options?.bank_slip?.url,
-      pix_copia_e_cola: cobranca.pix?.emv
+      qr_code_url: cobranca.payment_options?.bank_slip?.url, // O URL original do seu código
+      pix_copia_e_cola: cobranca.pix?.emv // O copia e cola original do seu código
     });
 
   } catch (error) {
