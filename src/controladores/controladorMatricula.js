@@ -1,5 +1,6 @@
 const servicoCora = require('../servicos/servicoCora');
 const validadorCpf = require('../utilitarios/validadorCpf');
+
 // Importações dos novos serviços
 const servicoNotion = require('../servicos/servicoNotion');
 const servicoEmail = require('../servicos/servicoEmail');
@@ -58,6 +59,17 @@ const gerarPixMatricula = async (req, res) => {
       valorMatricula
     });
 
+    const pixCopiaECola =
+      cobranca.pix?.emv ||
+      cobranca.payment_options?.pix?.emv ||
+      cobranca.payment_options?.pix?.payload ||
+      null;
+
+    const boletoUrl =
+      cobranca.payment_options?.bank_slip?.url ||
+      cobranca.payment_options?.bank_slip?.pdf_url ||
+      null;
+
     // Prepara os dados para salvar no Notion e enviar por e-mail
     const dadosMatricula = {
       nome,
@@ -65,9 +77,12 @@ const gerarPixMatricula = async (req, res) => {
       email,
       whatsapp,
       plano,
-      valor: valorMatricula, 
+      nomePlano,
+      valor: valorMatricula,
       id: cobranca.id,
-      status: cobranca.status || 'OPEN'
+      status: cobranca.status || 'OPEN',
+      pix_copia_e_cola: pixCopiaECola,
+      boleto_url: boletoUrl
     };
 
     // 2. Salva no Notion de forma isolada
@@ -75,7 +90,10 @@ const gerarPixMatricula = async (req, res) => {
       await servicoNotion.salvarMatriculaNoNotion(dadosMatricula);
       console.log(`✅ Matrícula de ${nome} salva no Notion com sucesso.`);
     } catch (erroNotion) {
-      console.error('⚠️ Falha ao salvar no Notion, mas o Pix seguirá normalmente:', erroNotion.message);
+      console.error(
+        '⚠️ Falha ao salvar no Notion, mas o Pix seguirá normalmente:',
+        erroNotion.message
+      );
     }
 
     // 3. Envia o E-mail de forma isolada
@@ -83,19 +101,30 @@ const gerarPixMatricula = async (req, res) => {
       await servicoEmail.enviarNotificacaoMatricula(dadosMatricula);
       console.log(`✅ E-mail de notificação enviado para a secretaria (${nome}).`);
     } catch (erroEmail) {
-      console.error('⚠️ Falha ao enviar e-mail, mas o Pix seguirá normalmente:', erroEmail.message);
+      console.error(
+        '⚠️ Falha ao enviar e-mail, mas o Pix seguirá normalmente:',
+        erroEmail.message
+      );
     }
 
-    // 4. Retorna os dados para o Front-end (Executa independente das falhas acima)
+    // 4. Retorna os dados para o Front-end
     return res.status(200).json({
       sucesso: true,
       id: cobranca.id,
-      status: cobranca.status,
+      status: cobranca.status || 'OPEN',
       plano,
       nome_plano: nomePlano,
-      valor: cobranca.total_amount,
-      qr_code_url: cobranca.payment_options?.bank_slip?.url, // O URL original do seu código
-      pix_copia_e_cola: cobranca.pix?.emv // O copia e cola original do seu código
+      valor: cobranca.total_amount || valorMatricula,
+
+      // Link do boleto completo da Cora, caso você queira manter disponível
+      boleto_url: boletoUrl,
+
+      // Mantido como null para não confundir com imagem do QR Code
+      // O QR Code nítido será gerado no front-end a partir do Pix copia e cola
+      qr_code_url: null,
+
+      // Código Pix copia e cola usado para gerar o QR Code no WordPress
+      pix_copia_e_cola: pixCopiaECola
     });
 
   } catch (error) {
