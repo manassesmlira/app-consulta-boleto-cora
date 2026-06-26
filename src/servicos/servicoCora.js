@@ -533,7 +533,7 @@ async consultarBoletosPorCpf(cpf) {
     throw error;
   }
 }
-async gerarPixMatricula({ nome, cpf, email, whatsapp, plano, nomePlano, valorMatricula }) {
+async gerarPixMatricula({ nome, cpf, email, whatsapp, plano, nomePlano, valorMatricula, pedidoUuid }) {
   const { randomUUID } = require('crypto');
 
   const httpsAgent = await this.createHttpsAgent();
@@ -544,7 +544,7 @@ async gerarPixMatricula({ nome, cpf, email, whatsapp, plano, nomePlano, valorMat
   const dueDate = hoje.toISOString().split('T')[0];
 
   const payload = {
-    code: `matricula_${plano}_${Date.now()}`,
+    code: pedidoUuid ? `matricula_${plano}_${pedidoUuid}` : `matricula_${plano}_${Date.now()}`,
     customer: {
       name: nome,
       email: email,

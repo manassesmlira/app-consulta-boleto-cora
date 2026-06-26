@@ -15,3 +15,5 @@ documentacao
 .env*.local
 cert_key_cora_production_*/
 *.zip
+controladorMatricula.js.bak-20260626143837
+servicoCora.js.bak-20260626143837

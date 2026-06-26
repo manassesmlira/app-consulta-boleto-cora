@@ -1,22 +1,41 @@
 const servicoCora = require('../servicos/servicoCora');
 const validadorCpf = require('../utilitarios/validadorCpf');
 
-// Importações dos novos serviços
+// Importa??es dos novos servi?os
 const servicoNotion = require('../servicos/servicoNotion');
 const servicoEmail = require('../servicos/servicoEmail');
 
 const gerarPixMatricula = async (req, res) => {
-  const { nome, cpf, email, whatsapp, plano } = req.body;
+  const gatewaySecret = process.env.CP_CHECKOUT_GATEWAY_SECRET;
+  const receivedSecret = req.headers['x-cp-checkout-secret'];
+
+  if (gatewaySecret && receivedSecret !== gatewaySecret) {
+    return res.status(401).json({
+      erro: 'Acesso n?o autorizado ao gateway de matr?cula.'
+    });
+  }
+
+  const {
+    nome,
+    cpf,
+    email,
+    whatsapp,
+    plano,
+    nome_plano,
+    produto_nome,
+    pedido_uuid,
+    valor_matricula_centavos
+  } = req.body;
 
   if (!nome || !cpf || !email || !whatsapp || !plano) {
     return res.status(400).json({
-      erro: 'Nome, CPF, e-mail, WhatsApp e plano são obrigatórios.'
+      erro: 'Nome, CPF, e-mail, WhatsApp e plano s?o obrigat?rios.'
     });
   }
 
   if (!validadorCpf.validar(cpf)) {
     return res.status(400).json({
-      erro: 'CPF inválido.'
+      erro: 'CPF inv?lido.'
     });
   }
 
@@ -24,11 +43,12 @@ const gerarPixMatricula = async (req, res) => {
 
   let valorMatricula = 9990;
   let nomePlano = 'Bacharel Livre em Teologia';
+  let valorOrigem = 'fallback_plano';
 
   switch (plano) {
     case 'bacharel-mec':
       valorMatricula = 19700;
-      nomePlano = 'Bacharel em Teologia - Graduação';
+      nomePlano = 'Bacharel em Teologia - Gradua??o';
       break;
 
     case 'bacharel-livre':
@@ -43,8 +63,27 @@ const gerarPixMatricula = async (req, res) => {
 
     default:
       return res.status(400).json({
-        erro: 'Plano inválido.'
+        erro: 'Plano inv?lido.'
       });
+  }
+
+  if (valor_matricula_centavos !== undefined && valor_matricula_centavos !== null && valor_matricula_centavos !== '') {
+    const valorRecebido = Number(valor_matricula_centavos);
+
+    if (!Number.isInteger(valorRecebido) || valorRecebido < 1000 || valorRecebido > 100000) {
+      return res.status(400).json({
+        erro: 'Valor da matr?cula inv?lido.'
+      });
+    }
+
+    valorMatricula = valorRecebido;
+    valorOrigem = 'wordpress';
+  }
+
+  if (nome_plano) {
+    nomePlano = String(nome_plano).trim();
+  } else if (produto_nome) {
+    nomePlano = String(produto_nome).trim();
   }
 
   try {
@@ -56,7 +95,8 @@ const gerarPixMatricula = async (req, res) => {
       whatsapp,
       plano,
       nomePlano,
-      valorMatricula
+      valorMatricula,
+      pedidoUuid: pedido_uuid
     });
 
     const pixCopiaECola =
@@ -78,7 +118,10 @@ const gerarPixMatricula = async (req, res) => {
       whatsapp,
       plano,
       nomePlano,
+      produto_nome: produto_nome || nomePlano,
+      pedido_uuid: pedido_uuid || null,
       valor: valorMatricula,
+      valor_origem: valorOrigem,
       id: cobranca.id,
       status: cobranca.status || 'OPEN',
       pix_copia_e_cola: pixCopiaECola,
@@ -88,10 +131,10 @@ const gerarPixMatricula = async (req, res) => {
     // 2. Salva no Notion de forma isolada
     try {
       await servicoNotion.salvarMatriculaNoNotion(dadosMatricula);
-      console.log(`✅ Matrícula de ${nome} salva no Notion com sucesso.`);
+      console.log(`? Matr?cula de ${nome} salva no Notion com sucesso.`);
     } catch (erroNotion) {
       console.error(
-        '⚠️ Falha ao salvar no Notion, mas o Pix seguirá normalmente:',
+        '?? Falha ao salvar no Notion, mas o Pix seguir? normalmente:',
         erroNotion.message
       );
     }
@@ -99,10 +142,10 @@ const gerarPixMatricula = async (req, res) => {
     // 3. Envia o E-mail de forma isolada
     try {
       await servicoEmail.enviarNotificacaoMatricula(dadosMatricula);
-      console.log(`✅ E-mail de notificação enviado para a secretaria (${nome}).`);
+      console.log(`? E-mail de notifica??o enviado para a secretaria (${nome}).`);
     } catch (erroEmail) {
       console.error(
-        '⚠️ Falha ao enviar e-mail, mas o Pix seguirá normalmente:',
+        '?? Falha ao enviar e-mail, mas o Pix seguir? normalmente:',
         erroEmail.message
       );
     }
@@ -115,20 +158,21 @@ const gerarPixMatricula = async (req, res) => {
       plano,
       nome_plano: nomePlano,
       valor: cobranca.total_amount || valorMatricula,
+      valor_origem: valorOrigem,
 
-      // Link do boleto completo da Cora, caso você queira manter disponível
+      // Link do boleto completo da Cora, caso voc? queira manter dispon?vel
       boleto_url: boletoUrl,
 
-      // Mantido como null para não confundir com imagem do QR Code
-      // O QR Code nítido será gerado no front-end a partir do Pix copia e cola
+      // Mantido como null para n?o confundir com imagem do QR Code
+      // O QR Code n?tido ser? gerado no front-end a partir do Pix copia e cola
       qr_code_url: null,
 
-      // Código Pix copia e cola usado para gerar o QR Code no WordPress
+      // C?digo Pix copia e cola usado para gerar o QR Code no WordPress
       pix_copia_e_cola: pixCopiaECola
     });
 
   } catch (error) {
-    console.error('Erro ao gerar Pix de matrícula:', error.message);
+    console.error('Erro ao gerar Pix de matr?cula:', error.message);
 
     if (error.response) {
       console.error('Status da Cora:', error.response.status);
@@ -136,7 +180,7 @@ const gerarPixMatricula = async (req, res) => {
     }
 
     return res.status(500).json({
-      erro: 'Não foi possível gerar o Pix da matrícula.'
+      erro: 'N?o foi poss?vel gerar o Pix da matr?cula.'
     });
   }
 };
